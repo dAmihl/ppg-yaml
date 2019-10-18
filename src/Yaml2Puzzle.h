@@ -1,5 +1,5 @@
 #pragma once
-#include "PuzzGen.h"
+#include "ppg-core/PuzzGen.h"
 #include "yaml-cpp/yaml.h"
 #include <iostream>
 #include <fstream>

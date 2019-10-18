@@ -13,7 +13,7 @@ ADD_LIBRARY(ppg-yaml STATIC
 	${PROJECT_SOURCE_DIR}/Yaml2Puzzle.cpp
 	)
 
-target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIRECTORY})
+target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIRECTORY} ${INCLUDE_DIRECTORY}/ppg-core/includes ${INCLUDE_DIRECTORY}/yaml-cpp/include/)
 
 set_target_properties(ppg-yaml PROPERTIES 
 		PUBLIC_HEADER 	"${PROJECT_HEADERS_DIR}/Yaml2Puzzle.h;")
