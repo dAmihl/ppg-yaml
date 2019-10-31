@@ -2,21 +2,21 @@ cmake_minimum_required (VERSION 2.6)
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 SET (CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR})
 project (ppg-yaml)
-SET (PROJECT_SOURCE_DIR "src")
+SET (SOURCES_DIR "src")
 SET (PROJECT_HEADERS_DIR "src")
-SET (INCLUDE_DIRECTORY "${CMAKE_SOURCE_DIR}/includes")
-SET (LIB_DIRECTORY "${CMAKE_SOURCE_DIR}")
+SET (INCLUDE_DIRECTORY "${PROJECT_SOURCE_DIR}/includes")
+SET (LIB_DIRECTORY "${PROJECT_SOURCE_DIR}")
 
 # CMake instructions to make the static lib
 
-SET (YAML_CPP_SUBDIR "${CMAKE_SOURCE_DIR}/includes/thirdparty/yaml-cpp")
-SET (PPG_CORE_SUBDIR "${CMAKE_SOURCE_DIR}/includes/ppg-core")
+SET (YAML_CPP_SUBDIR "${PROJECT_SOURCE_DIR}/includes/thirdparty/yaml-cpp")
+SET (PPG_CORE_SUBDIR "${PROJECT_SOURCE_DIR}/includes/ppg-core")
 
 add_subdirectory(${YAML_CPP_SUBDIR})
 add_subdirectory(${PPG_CORE_SUBDIR})
 
 ADD_LIBRARY(ppg-yaml STATIC
-	${PROJECT_SOURCE_DIR}/Yaml2Puzzle.cpp
+	${SOURCES_DIR}/Yaml2Puzzle.cpp
 	)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDE_DIRECTORY} ${INCLUDE_DIRECTORY}/ppg-core/includes ${INCLUDE_DIRECTORY}/thirdparty/yaml-cpp/include/)
