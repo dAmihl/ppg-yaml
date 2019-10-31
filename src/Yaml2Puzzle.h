@@ -20,6 +20,7 @@
 #define OBJECT_STATE_DEFAULT "default"
 
 #define RULES_BLOCK "rules"
+#define RULES_TYPE "type"
 #define RULES_LHS "lh"
 #define RULES_RHS "rh"
 

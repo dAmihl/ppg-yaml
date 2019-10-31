@@ -157,6 +157,11 @@ Puzzle * Yaml2Puzzle::generatePuzzle(std::string pathToYaml)
 				continue;
 			}
 			
+			if (!ru[RULES_TYPE]) {
+				this->log("Ruletype of Rule not found.",1);
+				continue;
+			}
+			
 			std::string lhName = ru[RULES_LHS]["name"].as<std::string>();
 			std::string rhName = ru[RULES_RHS]["name"].as<std::string>();
 
@@ -185,9 +190,23 @@ Puzzle * Yaml2Puzzle::generatePuzzle(std::string pathToYaml)
 				rhStateName = ru[RULES_RHS]["state"].as<std::string>();
 				rhState = statesMap[rhStateName];
 			}
+			
+			std::string ruleTypeName = ru[RULES_TYPE].as<std::string>();
+			PuzzleRule::E_PuzzleRuleType ruleType = PuzzleRule::E_PuzzleRuleType::BEFORE;
+			
+			if (ruleTypeName == "BEFORE") {
+				PuzzleRule::E_PuzzleRuleType::BEFORE;
+			} else if (ruleTypeName == "STRICT_BEFORE"){
+				PuzzleRule::E_PuzzleRuleType::STRICT_BEFORE;
+			} else if (ruleTypeName == "AFTER") {
+				PuzzleRule::E_PuzzleRuleType::AFTER;
+			} else if (ruleTypeName == "STRICT_AFTER"){
+				ruleType = PuzzleRule::E_PuzzleRuleType::STRICT_AFTER;
+			} else {
+				this->log("Unknown Ruletype! Defaulting to BEFORE.", 1);
+			}
 
-
-			PuzzleRule* tmpRule = new PuzzleRule(lhO, lhState, rhO, rhState, PuzzleRule::E_PuzzleRuleType::BEFORE);
+			PuzzleRule* tmpRule = new PuzzleRule(lhO, lhState, rhO, rhState, ruleType);
 			rulesList.push_back(*tmpRule);
 		}
 
