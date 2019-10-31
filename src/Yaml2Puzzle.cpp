@@ -195,11 +195,11 @@ Puzzle * Yaml2Puzzle::generatePuzzle(std::string pathToYaml)
 			PuzzleRule::E_PuzzleRuleType ruleType = PuzzleRule::E_PuzzleRuleType::BEFORE;
 			
 			if (ruleTypeName == "BEFORE") {
-				PuzzleRule::E_PuzzleRuleType::BEFORE;
+				ruleType = PuzzleRule::E_PuzzleRuleType::BEFORE;
 			} else if (ruleTypeName == "STRICT_BEFORE"){
-				PuzzleRule::E_PuzzleRuleType::STRICT_BEFORE;
+				ruleType = PuzzleRule::E_PuzzleRuleType::STRICT_BEFORE;
 			} else if (ruleTypeName == "AFTER") {
-				PuzzleRule::E_PuzzleRuleType::AFTER;
+				ruleType = PuzzleRule::E_PuzzleRuleType::AFTER;
 			} else if (ruleTypeName == "STRICT_AFTER"){
 				ruleType = PuzzleRule::E_PuzzleRuleType::STRICT_AFTER;
 			} else {
