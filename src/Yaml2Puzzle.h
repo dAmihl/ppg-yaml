@@ -1,8 +1,12 @@
 #pragma once
 #include "ppg-core/PuzzGen.h"
 #include "yaml-cpp/yaml.h"
+
+#define WRITE_LOG 0
+#if WRITE_LOG > 0
 #include <iostream>
 #include <fstream>
+#endif
 
 #define NUM_NODES "num_nodes"
 
@@ -34,10 +38,13 @@ public:
 	void setNumberOfNodes(int n);
 	int getNumberOfNodes();
 
-	Puzzle* generatePuzzle(std::string pathToYaml);
+	Puzzle* generatePuzzleByFile(std::string pathToYaml);
+	Puzzle* generatePuzzleByString(std::string yamlString);
 
 private:
 	PuzzleObject* getObjectByName(std::string name, T_PuzzleObjectList objects);
+
+	Puzzle* generatePuzzle(YAML::Node rootNode);
 
 	void log(std::string logStr, int logLevel);
 

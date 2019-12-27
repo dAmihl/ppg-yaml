@@ -21,10 +21,35 @@ int Yaml2Puzzle::getNumberOfNodes()
 }
 
 
-Puzzle * Yaml2Puzzle::generatePuzzle(std::string pathToYaml)
+Puzzle * Yaml2Puzzle::generatePuzzleByFile(std::string pathToYaml)
 {
 
 	YAML::Node rootNode = YAML::LoadFile(pathToYaml);
+
+	return this->generatePuzzle(rootNode);
+}
+
+Puzzle* Yaml2Puzzle::generatePuzzleByString(std::string yamlString)
+{
+	YAML::Node rootNode = YAML::Load(yamlString);
+
+	return this->generatePuzzle(rootNode);
+}
+
+
+PuzzleObject* Yaml2Puzzle::getObjectByName(std::string name, T_PuzzleObjectList objects) {
+
+	for (const auto& obj : objects) {
+		if (obj->getObjectName() == name) {
+			return obj;
+		}
+	}
+
+	return nullptr;
+}
+
+Puzzle* Yaml2Puzzle::generatePuzzle(YAML::Node rootNode)
+{
 
 	T_PuzzleEventList eventsList;
 	T_PuzzleObjectList objectsList;
@@ -75,7 +100,7 @@ Puzzle * Yaml2Puzzle::generatePuzzle(std::string pathToYaml)
 			PuzzleObject* tmpObj;
 			PuzzleList<PuzzleState>::Type statesList;
 			if (bIsTemplate) {
-				tmpObj = new PuzzleObject(name + "_T_"+std::to_string(i));
+				tmpObj = new PuzzleObject(name + "_T_" + std::to_string(i));
 				tmpObj->setTemplateName(name);
 				this->log("Generating template of " + name, 0);
 			}
@@ -113,10 +138,11 @@ Puzzle * Yaml2Puzzle::generatePuzzle(std::string pathToYaml)
 
 			for (const auto& ev : events) {
 				std::string evName;
-				
+
 				if (ev["name"]) {
-					evName = ev["name"].as<std::string>();	
-				} else {
+					evName = ev["name"].as<std::string>();
+				}
+				else {
 					evName = ev.as<std::string>();
 				}
 
@@ -146,7 +172,7 @@ Puzzle * Yaml2Puzzle::generatePuzzle(std::string pathToYaml)
 		}
 	}
 
-		
+
 
 	// Parse Rules and generate ruleset
 	if (rootNode[RULES_BLOCK]) {
@@ -156,12 +182,12 @@ Puzzle * Yaml2Puzzle::generatePuzzle(std::string pathToYaml)
 				this->log("Lefthandside of rule or righthandside of rule not found.", 1);
 				continue;
 			}
-			
+
 			if (!ru[RULES_TYPE]) {
-				this->log("Ruletype of Rule not found.",1);
+				this->log("Ruletype of Rule not found.", 1);
 				continue;
 			}
-			
+
 			std::string lhName = ru[RULES_LHS]["name"].as<std::string>();
 			std::string rhName = ru[RULES_RHS]["name"].as<std::string>();
 
@@ -190,19 +216,23 @@ Puzzle * Yaml2Puzzle::generatePuzzle(std::string pathToYaml)
 				rhStateName = ru[RULES_RHS]["state"].as<std::string>();
 				rhState = statesMap[rhStateName];
 			}
-			
+
 			std::string ruleTypeName = ru[RULES_TYPE].as<std::string>();
 			PuzzleRule::E_PuzzleRuleType ruleType = PuzzleRule::E_PuzzleRuleType::BEFORE;
-			
+
 			if (ruleTypeName == "BEFORE") {
 				ruleType = PuzzleRule::E_PuzzleRuleType::BEFORE;
-			} else if (ruleTypeName == "STRICT_BEFORE"){
+			}
+			else if (ruleTypeName == "STRICT_BEFORE") {
 				ruleType = PuzzleRule::E_PuzzleRuleType::STRICT_BEFORE;
-			} else if (ruleTypeName == "AFTER") {
+			}
+			else if (ruleTypeName == "AFTER") {
 				ruleType = PuzzleRule::E_PuzzleRuleType::AFTER;
-			} else if (ruleTypeName == "STRICT_AFTER"){
+			}
+			else if (ruleTypeName == "STRICT_AFTER") {
 				ruleType = PuzzleRule::E_PuzzleRuleType::STRICT_AFTER;
-			} else {
+			}
+			else {
 				this->log("Unknown Ruletype! Defaulting to BEFORE.", 1);
 			}
 
@@ -231,29 +261,19 @@ Puzzle * Yaml2Puzzle::generatePuzzle(std::string pathToYaml)
 		this->log("No number of nodes found in config. Using standard value.", 0);
 	}
 
-	PuzzleGenerator * puzzGenerator = new PuzzleGenerator();
+	PuzzleGenerator* puzzGenerator = new PuzzleGenerator();
 	puzzGenerator->setNumberNodes(this->numberOfNodes);
-	Puzzle *P = puzzGenerator->generatePuzzle(objectsList, eventsList, rulesList);
+	Puzzle* P = puzzGenerator->generatePuzzle(objectsList, eventsList, rulesList);
 
 
 	return P;
 }
 
-
-PuzzleObject* Yaml2Puzzle::getObjectByName(std::string name, T_PuzzleObjectList objects) {
-
-	for (const auto& obj : objects) {
-		if (obj->getObjectName() == name) {
-			return obj;
-		}
-	}
-
-	return nullptr;
-}
-
 void Yaml2Puzzle::log(std::string logStr, int logLevel)
 {
+#if WRITE_LOG > 0
 	std::ofstream file("ppg-yaml.log", std::ofstream::app);
 	file << logStr << "\n";
 	file.close();
+#endif
 }
