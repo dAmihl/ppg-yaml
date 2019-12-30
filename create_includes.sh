@@ -1,3 +1,6 @@
-mkdir -p out
-cp src/*.h out
-cp build/Release/*.lib out
+rm -rf include/
+rm -rf lib/
+mkdir -p include
+mkdir -p lib
+cp src/*.h include
+cp build/Release/*.lib lib
