@@ -19,7 +19,7 @@ ADD_LIBRARY(ppg-yaml STATIC
 	${SOURCES_DIR}/Yaml2Puzzle.cpp
 	)
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDE_DIRECTORY} ${INCLUDE_DIRECTORY}/ppg-core/includes ${INCLUDE_DIRECTORY}/thirdparty/yaml-cpp/include/)
+target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDE_DIRECTORY} ${INCLUDE_DIRECTORY}/ppg-core/include/ ${INCLUDE_DIRECTORY}/thirdparty/yaml-cpp/include/)
 
 find_package(yaml-cpp PATHS ${INCLUDE_DIRECTORY}/thirdparty/yaml-cpp/build)
 
