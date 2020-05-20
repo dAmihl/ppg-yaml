@@ -15,13 +15,16 @@ SET (PPG_CORE_SUBDIR "${PROJECT_SOURCE_DIR}/includes/ppg-core")
 add_subdirectory(${YAML_CPP_SUBDIR})
 add_subdirectory(${PPG_CORE_SUBDIR})
 
+link_directories( "${PROJECT_SOURCE_DIR}/includes/yaml-cpp/build")
+link_directories("${PROJECT_SOURCE_DIR}/includes/ppg-core/build")
+
 ADD_LIBRARY(ppg-yaml STATIC
 	${SOURCES_DIR}/Yaml2Puzzle.cpp
 	)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDE_DIRECTORY} ${INCLUDE_DIRECTORY}/ppg-core/include/ ${INCLUDE_DIRECTORY}/thirdparty/yaml-cpp/include/)
 
-find_package(yaml-cpp PATHS ${INCLUDE_DIRECTORY}/thirdparty/yaml-cpp/build)
+#find_package(yaml-cpp PATHS ${INCLUDE_DIRECTORY}/thirdparty/yaml-cpp/build)
 
 target_link_libraries(ppg-yaml PUBLIC ppg-core)
 target_link_libraries(ppg-yaml PUBLIC yaml-cpp)
