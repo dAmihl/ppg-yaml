@@ -1,5 +1,5 @@
 #pragma once
-#include "ppg-core/PuzzGen.h"
+#include "PuzzGen.h"
 #include "yaml-cpp/yaml.h"
 
 #define WRITE_LOG 0
