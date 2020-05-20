@@ -1,6 +1,3 @@
 [submodule "includes/ppg-core"]
 	path = includes/ppg-core
 	url = https://github.com/dAmihl/ppg-core.git
-[submodule "includes/thirdparty/yaml-cpp"]
-	path = includes/thirdparty/yaml-cpp
-	url = https://github.com/dAmihl/yaml-cpp
