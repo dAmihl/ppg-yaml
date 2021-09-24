@@ -1,45 +1,33 @@
 #include "Yaml2Puzzle.h"
 
 
-Yaml2Puzzle::Yaml2Puzzle()
-{
-}
-
-
-Yaml2Puzzle::~Yaml2Puzzle()
-{
-}
-
 void Yaml2Puzzle::setNumberOfNodes(int n)
 {
-	this->numberOfNodes = n;
+	numberOfNodes = n;
 }
 
-int Yaml2Puzzle::getNumberOfNodes()
+int Yaml2Puzzle::getNumberOfNodes() const
 {
-	return this->numberOfNodes;
+	return numberOfNodes;
 }
 
 
-Puzzle * Yaml2Puzzle::generatePuzzleByFile(std::string pathToYaml)
+PPG::UPtr<PPG::Puzzle> Yaml2Puzzle::generatePuzzleByFile(Str pathToYaml)
 {
-
 	YAML::Node rootNode = YAML::LoadFile(pathToYaml);
-
-	return this->generatePuzzle(rootNode);
+	return generatePuzzle(rootNode);
 }
 
-Puzzle* Yaml2Puzzle::generatePuzzleByString(std::string yamlString)
+PPG::UPtr<PPG::Puzzle> Yaml2Puzzle::generatePuzzleByString(Str yamlString)
 {
 	YAML::Node rootNode = YAML::Load(yamlString);
-
-	return this->generatePuzzle(rootNode);
+	return generatePuzzle(rootNode);
 }
 
 
-PuzzleObject* Yaml2Puzzle::getObjectByName(std::string name, T_PuzzleObjectList objects) {
+PPG::Ptr<PPG::Object> Yaml2Puzzle::getObjectByName(Str name, Vec<Ptr<Object>>& objects) {
 
-	for (const auto& obj : objects) {
+	for (auto& obj : objects) {
 		if (obj->getObjectName() == name) {
 			return obj;
 		}
@@ -48,13 +36,12 @@ PuzzleObject* Yaml2Puzzle::getObjectByName(std::string name, T_PuzzleObjectList 
 	return nullptr;
 }
 
-Puzzle* Yaml2Puzzle::generatePuzzle(YAML::Node rootNode)
+PPG::UPtr<PPG::Puzzle> Yaml2Puzzle::generatePuzzle(YAML::Node rootNode)
 {
 
-	T_PuzzleEventList eventsList;
-	T_PuzzleObjectList objectsList;
-	T_PuzzleRuleList rulesList;
-	std::map<std::string, PuzzleState*> statesMap;
+	Context c;
+
+	Map<Str, State> statesMap;
 
 	// Parse objects and generate object set
 	for (const auto& obj : rootNode[OBJECTS_BLOCK]) {
@@ -87,7 +74,7 @@ Puzzle* Yaml2Puzzle::generatePuzzle(YAML::Node rootNode)
 						minNum = obj[OBJECT_TEMPLATE_MIN_NUM].as<unsigned int>();
 						maxNum = obj[OBJECT_TEMPLATE_MAX_NUM].as<unsigned int>();
 
-						numTemplates = PuzzleRandomizer::getRandomUintFromRange(minNum, maxNum);
+						numTemplates = Randomizer::getRandomUintFromRange(minNum, maxNum);
 					}
 					else {
 						numTemplates = 1;
@@ -97,18 +84,23 @@ Puzzle* Yaml2Puzzle::generatePuzzle(YAML::Node rootNode)
 		}
 
 		for (unsigned int i = 0; i < numTemplates; i++) {
-			PuzzleObject* tmpObj;
-			PuzzleList<PuzzleState>::Type statesList;
+			Vec<State> statesList;
+			std::string objName;
 			if (bIsTemplate) {
-				tmpObj = new PuzzleObject(name + "_T_" + std::to_string(i));
-				tmpObj->setTemplateName(name);
+				objName = name + "_T_" + std::to_string(i);
 				this->log("Generating template of " + name, 0);
 			}
 			else {
-				tmpObj = new PuzzleObject(name);
+				objName = name;
 				this->log(name + " is not a template. Generating object normal.", 0);
 			}
 
+			auto tmpObj = c.add<Object>(objName);
+			if (bIsTemplate)
+			{
+				tmpObj->setTemplateName(objName);
+			}
+			
 			bool defaultStateSet = false;
 			for (const auto& s : states) {
 				// TODO: Check unique state name
@@ -117,18 +109,18 @@ Puzzle* Yaml2Puzzle::generatePuzzle(YAML::Node rootNode)
 				if (s[OBJECT_STATE_DEFAULT]) {
 					bSetDefault = true;
 				}
-				PuzzleState* tmpS = new PuzzleState(sName);
+				State tmpS(sName);
 				if (bSetDefault) {
-					tmpObj->setCurrentState(*tmpS);
+					tmpObj->setCurrentState(tmpS);
 					defaultStateSet = true;
 				}
 				statesMap[sName] = tmpS;
-				statesList.push_back(*tmpS);
+				statesList.push_back(tmpS);
 			}
 
 			if (!defaultStateSet) {
 				// Choose random possible state as starting state
-				PuzzleState startState = PuzzleRandomizer::getRandomStateFromList(statesList);
+				State startState = Randomizer::getRandomFromList(statesList);
 				tmpObj->setCurrentState(startState);
 				this->log("Set random default state", 0);
 			}
@@ -146,7 +138,7 @@ Puzzle* Yaml2Puzzle::generatePuzzle(YAML::Node rootNode)
 					evName = ev.as<std::string>();
 				}
 
-				PuzzleEvent* tmpEv = new PuzzleEvent(evName, tmpObj);
+				auto tmpEv = c.add<Event>(evName, tmpObj);
 
 				if (ev["reversible"]) {
 					bool isReversible = ev["reversible"].as<bool>();
@@ -156,28 +148,22 @@ Puzzle* Yaml2Puzzle::generatePuzzle(YAML::Node rootNode)
 				else {
 					this->log("Event not reversible", 0);
 				}
-
-				eventsList.push_back(tmpEv);
 			}
 
 			StateTransition* objTransition = new StateTransition();
 
 			for (const auto& ts : transitions) {
-				objTransition->addTransition(ts["event"].as<std::string>(), *(statesMap[ts["from"].as<std::string>()]), *(statesMap[ts["to"].as<std::string>()]));
+				objTransition->addTransition(ts["event"].as<std::string>(), (statesMap[ts["from"].as<std::string>()]), (statesMap[ts["to"].as<std::string>()]));
 			}
 
 			tmpObj->setStateTransition(*objTransition);
-
-			objectsList.push_back(tmpObj);
 		}
 	}
-
 
 
 	// Parse Rules and generate ruleset
 	if (rootNode[RULES_BLOCK]) {
 		for (const auto& ru : rootNode[RULES_BLOCK]) {
-
 			if (!ru[RULES_LHS] || !ru[RULES_RHS]) {
 				this->log("Lefthandside of rule or righthandside of rule not found.", 1);
 				continue;
@@ -191,13 +177,13 @@ Puzzle* Yaml2Puzzle::generatePuzzle(YAML::Node rootNode)
 			std::string lhName = ru[RULES_LHS]["name"].as<std::string>();
 			std::string rhName = ru[RULES_RHS]["name"].as<std::string>();
 
-			PuzzleObject* lhO = this->getObjectByName(lhName, objectsList);
+			auto lhO = getObjectByName(lhName, c.getObjects());
 			if (lhO == nullptr) {
 				this->log("LH nullptr", 1);
 				continue;
 			}
 
-			PuzzleObject* rhO = this->getObjectByName(rhName, objectsList);
+			auto rhO = getObjectByName(rhName, c.getObjects());
 			if (rhO == nullptr) {
 				this->log("RH nullptr", 1);
 				continue;
@@ -206,8 +192,8 @@ Puzzle* Yaml2Puzzle::generatePuzzle(YAML::Node rootNode)
 
 			std::string lhStateName;
 			std::string rhStateName;
-			PuzzleState* lhState = nullptr;
-			PuzzleState* rhState = nullptr;
+			State lhState;
+			State rhState;
 			if (ru["lh"]["state"]) {
 				lhStateName = ru[RULES_LHS]["state"].as<std::string>();
 				lhState = statesMap[lhStateName];
@@ -218,32 +204,31 @@ Puzzle* Yaml2Puzzle::generatePuzzle(YAML::Node rootNode)
 			}
 
 			std::string ruleTypeName = ru[RULES_TYPE].as<std::string>();
-			PuzzleRule::E_PuzzleRuleType ruleType = PuzzleRule::E_PuzzleRuleType::BEFORE;
+			Rule::EPuzzleRuleType ruleType = Rule::EPuzzleRuleType::BEFORE;
 
 			if (ruleTypeName == "BEFORE") {
-				ruleType = PuzzleRule::E_PuzzleRuleType::BEFORE;
+				ruleType = Rule::EPuzzleRuleType::BEFORE;
 			}
 			else if (ruleTypeName == "STRICT_BEFORE") {
-				ruleType = PuzzleRule::E_PuzzleRuleType::STRICT_BEFORE;
+				ruleType = Rule::EPuzzleRuleType::STRICT_BEFORE;
 			}
 			else if (ruleTypeName == "AFTER") {
-				ruleType = PuzzleRule::E_PuzzleRuleType::AFTER;
+				ruleType = Rule::EPuzzleRuleType::AFTER;
 			}
 			else if (ruleTypeName == "STRICT_AFTER") {
-				ruleType = PuzzleRule::E_PuzzleRuleType::STRICT_AFTER;
+				ruleType = Rule::EPuzzleRuleType::STRICT_AFTER;
 			}
 			else {
 				this->log("Unknown Ruletype! Defaulting to BEFORE.", 1);
 			}
 
-			PuzzleRule* tmpRule = new PuzzleRule(lhO, lhState, rhO, rhState, ruleType);
-			rulesList.push_back(*tmpRule);
+			auto tmpRule = c.addRule(lhO, lhState, rhO, rhState, ruleType);
 		}
 
 		this->log("Rules generated:", 0);
 		std::string out = "%%% Rules %%%\n";
-		for (T_PuzzleRuleList::iterator it = rulesList.begin(); it != rulesList.end(); ++it) {
-			out += (*it).getTextualRepresentation();
+		for (auto &it : c.getRules()) {
+			out += it.getTextualRepresentation();
 			out += "\n";
 		}
 		this->log(out, 0);
@@ -261,15 +246,13 @@ Puzzle* Yaml2Puzzle::generatePuzzle(YAML::Node rootNode)
 		this->log("No number of nodes found in config. Using standard value.", 0);
 	}
 
-	PuzzleGenerator* puzzGenerator = new PuzzleGenerator();
-	puzzGenerator->setNumberNodes(this->numberOfNodes);
-	Puzzle* P = puzzGenerator->generatePuzzle(objectsList, eventsList, rulesList);
-
+	Generator puzzGenerator(numberOfNodes);
+	auto P = puzzGenerator.generatePuzzle(c);
 
 	return P;
 }
 
-void Yaml2Puzzle::log(std::string logStr, int logLevel)
+void Yaml2Puzzle::log(Str logStr, int logLevel)
 {
 #if WRITE_LOG > 0
 	std::ofstream file("ppg-yaml.log", std::ofstream::app);
