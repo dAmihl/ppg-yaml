@@ -26,7 +26,7 @@ project ("PPG-YAML-example")
 	targetdir "bin"
 	kind "ConsoleApp"
 	files {"example/*.cpp"}
-	includedirs {"src"}
+	includedirs {"src", "vendor/ppg-core/src"}
 	links {"PPG-YAML"}
 	
 	filter "configurations:Debug"
