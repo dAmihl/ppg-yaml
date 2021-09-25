@@ -12,20 +12,20 @@ int Yaml2Puzzle::getNumberOfNodes() const
 }
 
 
-PPG::UPtr<PPG::Puzzle> Yaml2Puzzle::generatePuzzleByFile(Str pathToYaml)
+PPG::UPtr<PPG::Puzzle> Yaml2Puzzle::generatePuzzleByFile(PPG::Str pathToYaml)
 {
 	YAML::Node rootNode = YAML::LoadFile(pathToYaml);
 	return generatePuzzle(rootNode);
 }
 
-PPG::UPtr<PPG::Puzzle> Yaml2Puzzle::generatePuzzleByString(Str yamlString)
+PPG::UPtr<PPG::Puzzle> Yaml2Puzzle::generatePuzzleByString(PPG::Str yamlString)
 {
 	YAML::Node rootNode = YAML::Load(yamlString);
 	return generatePuzzle(rootNode);
 }
 
 
-PPG::Ptr<PPG::Object> Yaml2Puzzle::getObjectByName(Str name, Vec<Ptr<Object>>& objects) {
+PPG::Ptr<PPG::Object> Yaml2Puzzle::getObjectByName(PPG::Str name, PPG::Vec<PPG::Ptr<PPG::Object>>& objects) {
 
 	for (auto& obj : objects) {
 		if (obj->getObjectName() == name) {
@@ -39,9 +39,9 @@ PPG::Ptr<PPG::Object> Yaml2Puzzle::getObjectByName(Str name, Vec<Ptr<Object>>& o
 PPG::UPtr<PPG::Puzzle> Yaml2Puzzle::generatePuzzle(YAML::Node rootNode)
 {
 
-	Context c;
+	PPG::Context c;
 
-	Map<Str, State> statesMap;
+	PPG::Map<PPG::Str, PPG::State> statesMap;
 
 	// Parse objects and generate object set
 	for (const auto& obj : rootNode[OBJECTS_BLOCK]) {
@@ -74,7 +74,7 @@ PPG::UPtr<PPG::Puzzle> Yaml2Puzzle::generatePuzzle(YAML::Node rootNode)
 						minNum = obj[OBJECT_TEMPLATE_MIN_NUM].as<unsigned int>();
 						maxNum = obj[OBJECT_TEMPLATE_MAX_NUM].as<unsigned int>();
 
-						numTemplates = Randomizer::getRandomUintFromRange(minNum, maxNum);
+						numTemplates = PPG::Randomizer::getRandomUintFromRange(minNum, maxNum);
 					}
 					else {
 						numTemplates = 1;
@@ -84,7 +84,7 @@ PPG::UPtr<PPG::Puzzle> Yaml2Puzzle::generatePuzzle(YAML::Node rootNode)
 		}
 
 		for (unsigned int i = 0; i < numTemplates; i++) {
-			Vec<State> statesList;
+			PPG::Vec<PPG::State> statesList;
 			std::string objName;
 			if (bIsTemplate) {
 				objName = name + "_T_" + std::to_string(i);
@@ -95,7 +95,7 @@ PPG::UPtr<PPG::Puzzle> Yaml2Puzzle::generatePuzzle(YAML::Node rootNode)
 				this->log(name + " is not a template. Generating object normal.", 0);
 			}
 
-			auto tmpObj = c.add<Object>(objName);
+			auto tmpObj = c.add<PPG::Object>(objName);
 			if (bIsTemplate)
 			{
 				tmpObj->setTemplateName(objName);
@@ -109,7 +109,7 @@ PPG::UPtr<PPG::Puzzle> Yaml2Puzzle::generatePuzzle(YAML::Node rootNode)
 				if (s[OBJECT_STATE_DEFAULT]) {
 					bSetDefault = true;
 				}
-				State tmpS(sName);
+				PPG::State tmpS(sName);
 				if (bSetDefault) {
 					tmpObj->setCurrentState(tmpS);
 					defaultStateSet = true;
@@ -120,7 +120,7 @@ PPG::UPtr<PPG::Puzzle> Yaml2Puzzle::generatePuzzle(YAML::Node rootNode)
 
 			if (!defaultStateSet) {
 				// Choose random possible state as starting state
-				State startState = Randomizer::getRandomFromList(statesList);
+				PPG::State startState = PPG::Randomizer::getRandomFromList(statesList);
 				tmpObj->setCurrentState(startState);
 				this->log("Set random default state", 0);
 			}
@@ -138,7 +138,7 @@ PPG::UPtr<PPG::Puzzle> Yaml2Puzzle::generatePuzzle(YAML::Node rootNode)
 					evName = ev.as<std::string>();
 				}
 
-				auto tmpEv = c.add<Event>(evName, tmpObj);
+				auto tmpEv = c.add<PPG::Event>(evName, tmpObj);
 
 				if (ev["reversible"]) {
 					bool isReversible = ev["reversible"].as<bool>();
@@ -150,7 +150,7 @@ PPG::UPtr<PPG::Puzzle> Yaml2Puzzle::generatePuzzle(YAML::Node rootNode)
 				}
 			}
 
-			StateTransition* objTransition = new StateTransition();
+			PPG::StateTransition* objTransition = new PPG::StateTransition();
 
 			for (const auto& ts : transitions) {
 				objTransition->addTransition(ts["event"].as<std::string>(), (statesMap[ts["from"].as<std::string>()]), (statesMap[ts["to"].as<std::string>()]));
@@ -192,8 +192,8 @@ PPG::UPtr<PPG::Puzzle> Yaml2Puzzle::generatePuzzle(YAML::Node rootNode)
 
 			std::string lhStateName;
 			std::string rhStateName;
-			State lhState;
-			State rhState;
+			PPG::State lhState;
+			PPG::State rhState;
 			if (ru["lh"]["state"]) {
 				lhStateName = ru[RULES_LHS]["state"].as<std::string>();
 				lhState = statesMap[lhStateName];
@@ -204,19 +204,19 @@ PPG::UPtr<PPG::Puzzle> Yaml2Puzzle::generatePuzzle(YAML::Node rootNode)
 			}
 
 			std::string ruleTypeName = ru[RULES_TYPE].as<std::string>();
-			Rule::EPuzzleRuleType ruleType = Rule::EPuzzleRuleType::BEFORE;
+			PPG::Rule::EPuzzleRuleType ruleType = PPG::Rule::EPuzzleRuleType::BEFORE;
 
 			if (ruleTypeName == "BEFORE") {
-				ruleType = Rule::EPuzzleRuleType::BEFORE;
+				ruleType = PPG::Rule::EPuzzleRuleType::BEFORE;
 			}
 			else if (ruleTypeName == "STRICT_BEFORE") {
-				ruleType = Rule::EPuzzleRuleType::STRICT_BEFORE;
+				ruleType = PPG::Rule::EPuzzleRuleType::STRICT_BEFORE;
 			}
 			else if (ruleTypeName == "AFTER") {
-				ruleType = Rule::EPuzzleRuleType::AFTER;
+				ruleType = PPG::Rule::EPuzzleRuleType::AFTER;
 			}
 			else if (ruleTypeName == "STRICT_AFTER") {
-				ruleType = Rule::EPuzzleRuleType::STRICT_AFTER;
+				ruleType = PPG::Rule::EPuzzleRuleType::STRICT_AFTER;
 			}
 			else {
 				this->log("Unknown Ruletype! Defaulting to BEFORE.", 1);
@@ -246,13 +246,13 @@ PPG::UPtr<PPG::Puzzle> Yaml2Puzzle::generatePuzzle(YAML::Node rootNode)
 		this->log("No number of nodes found in config. Using standard value.", 0);
 	}
 
-	Generator puzzGenerator(numberOfNodes);
+	PPG::Generator puzzGenerator(numberOfNodes);
 	auto P = puzzGenerator.generatePuzzle(c);
 
 	return P;
 }
 
-void Yaml2Puzzle::log(Str logStr, int logLevel)
+void Yaml2Puzzle::log(PPG::Str logStr, int logLevel)
 {
 #if WRITE_LOG > 0
 	std::ofstream file("ppg-yaml.log", std::ofstream::app);

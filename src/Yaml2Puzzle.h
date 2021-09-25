@@ -28,8 +28,6 @@
 #define RULES_LHS "lh"
 #define RULES_RHS "rh"
 
-using namespace PPG;
-
 class Yaml2Puzzle
 {
 
@@ -37,15 +35,15 @@ public:
 	void setNumberOfNodes(int n);
 	int getNumberOfNodes() const;
 
-	UPtr<Puzzle> generatePuzzleByFile(Str pathToYaml);
-	UPtr<Puzzle> generatePuzzleByString(Str yamlString);
+	PPG::UPtr<PPG::Puzzle> generatePuzzleByFile(PPG::Str pathToYaml);
+	PPG::UPtr<PPG::Puzzle> generatePuzzleByString(PPG::Str yamlString);
 
 private:
-	Ptr<Object> getObjectByName(Str name, Vec<Ptr<Object>>& objects);
+	PPG::Ptr<PPG::Object> getObjectByName(PPG::Str name, PPG::Vec<PPG::Ptr<PPG::Object>>& objects);
 
-	UPtr<Puzzle> generatePuzzle(YAML::Node rootNode);
+	PPG::UPtr<PPG::Puzzle> generatePuzzle(YAML::Node rootNode);
 
-	void log(Str logStr, int logLevel);
+	void log(PPG::Str logStr, int logLevel);
 
 	std::ofstream logFile;
 
