@@ -48,7 +48,7 @@ project ("PPG-YAML-example")
 	kind "ConsoleApp"
 	files {"example/*.cpp"}
 	includedirs {"src", "vendor/ppg-core/src", "vendor/yaml-cpp/include"}
-	links {"PPG-YAML"}
+	links {"PPG-YAML", "PPG", "yaml-cpp"}
 	
 	filter "configurations:Debug"
 		defines {"DEBUG"}
