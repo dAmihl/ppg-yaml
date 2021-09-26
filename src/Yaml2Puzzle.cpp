@@ -246,7 +246,7 @@ PPG::UPtr<PPG::Puzzle> Yaml2Puzzle::generatePuzzle(YAML::Node rootNode)
 		this->log("No number of nodes found in config. Using standard value.", 0);
 	}
 
-	PPG::Generator puzzGenerator(numberOfNodes);
+	PPG::DefaultGenerator puzzGenerator(numberOfNodes);
 	auto P = puzzGenerator.generatePuzzle(c);
 
 	return P;
