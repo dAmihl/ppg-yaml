@@ -12,6 +12,7 @@ int main()
 
 	std::cout << P->getExtendedTextualRepresentation() << "\n";
 
+	auto& pairs = P->getRelation().getPairs();
 	auto G = P->getGraphRepresentation();
 
 	return 0;
