@@ -12,5 +12,7 @@ int main()
 
 	std::cout << P->getExtendedTextualRepresentation() << "\n";
 
+	auto G = P->getGraphRepresentation();
+
 	return 0;
 }
