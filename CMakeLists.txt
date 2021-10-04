@@ -28,8 +28,8 @@ file(GLOB PPG_YAML_EXAMPLE_SRC
 
 option(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
 
-add_subdirectory(vendor/ppg-core)
-add_subdirectory(vendor/yaml-cpp)
+add_subdirectory(vendor/ppg-core EXCLUDE_FROM_ALL)
+add_subdirectory(vendor/yaml-cpp EXCLUDE_FROM_ALL)
 
 add_library(ppg-yaml STATIC ${PPG_YAML_SRC})
 
